@@ -1,0 +1,6 @@
+[
+  {"metric": "energy", "desc": "电量", "aggregation": "SUM", "themes": ["energy"], "editable": true},
+  {"metric": "max_load", "desc": "最大负荷", "aggregation": "MAX", "themes": ["load"], "editable": true},
+  {"metric": "avg_load", "desc": "平均负荷", "aggregation": "AVG", "themes": ["load"], "editable": true},
+  {"metric": "line_loss_rate", "desc": "线损率", "aggregation": "AVG", "themes": ["line_loss"], "editable": true}
+]

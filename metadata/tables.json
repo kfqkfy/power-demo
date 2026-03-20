@@ -1,0 +1,49 @@
+[
+  {
+    "table_name": "dim_station_area",
+    "table_desc": "台区维表，维护台区、供电所、线路、区域等主数据关系",
+    "business_domain": "档案/维度",
+    "editable": true,
+    "fields": [
+      {"name": "station_area_id", "desc": "台区ID", "role": "主键"},
+      {"name": "station_area_name", "desc": "台区名称", "role": "维度"},
+      {"name": "power_station_name", "desc": "供电所名称", "role": "维度"},
+      {"name": "line_name", "desc": "线路名称", "role": "维度"},
+      {"name": "region_name", "desc": "区域名称", "role": "维度"}
+    ]
+  },
+  {
+    "table_name": "energy_daily",
+    "table_desc": "日电量事实表",
+    "business_domain": "电量",
+    "editable": true,
+    "fields": [
+      {"name": "stat_date", "desc": "统计日期", "role": "时间"},
+      {"name": "station_area_id", "desc": "台区ID", "role": "关联键"},
+      {"name": "energy_kwh", "desc": "日电量(kWh)", "role": "指标"}
+    ]
+  },
+  {
+    "table_name": "load_daily",
+    "table_desc": "日负荷事实表",
+    "business_domain": "负荷",
+    "editable": true,
+    "fields": [
+      {"name": "stat_date", "desc": "统计日期", "role": "时间"},
+      {"name": "station_area_id", "desc": "台区ID", "role": "关联键"},
+      {"name": "max_load_kw", "desc": "最大负荷(kW)", "role": "指标"},
+      {"name": "avg_load_kw", "desc": "平均负荷(kW)", "role": "指标"}
+    ]
+  },
+  {
+    "table_name": "line_loss_daily",
+    "table_desc": "日线损事实表",
+    "business_domain": "线损",
+    "editable": true,
+    "fields": [
+      {"name": "stat_date", "desc": "统计日期", "role": "时间"},
+      {"name": "station_area_id", "desc": "台区ID", "role": "关联键"},
+      {"name": "line_loss_rate", "desc": "线损率", "role": "指标"}
+    ]
+  }
+]

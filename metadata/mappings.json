@@ -1,0 +1,59 @@
+{
+  "mapping_strategy": {
+    "priority": ["metric_code", "entity_code", "category_code", "metric_name", "category_path", "row_fallback"],
+    "note": "正式版优先使用业务编码/指标代码匹配，避免依赖固定行号。row_fallback 仅用于调试或兜底。"
+  },
+  "report_types": [
+    {
+      "report_type": "legacy_monthly_report",
+      "desc": "老式月报/综合情况表导入后的原始表映射规则",
+      "raw_layer": {
+        "source_kind": "existing_mysql_table",
+        "table_pattern": "raw_*",
+        "required_fields": ["stat_month", "metric_code", "metric_name", "entity_code", "entity_name", "parent_code", "parent_name", "value", "unit"]
+      },
+      "semantic_layer": {
+        "target_table": "semantic_monthly_fact",
+        "target_fields": [
+          "stat_month",
+          "report_code",
+          "report_name",
+          "metric_code",
+          "metric_name",
+          "metric_group",
+          "time_scope",
+          "energy_type_lv1",
+          "energy_type_lv2",
+          "entity_code",
+          "entity_name",
+          "entity_level",
+          "parent_entity_code",
+          "parent_entity_name",
+          "category_code",
+          "category_path",
+          "value",
+          "unit",
+          "source_table",
+          "source_row_key"
+        ]
+      },
+      "matching_rules": [
+        {
+          "name": "metric-code-first",
+          "match_by": ["metric_code"],
+          "extract": ["metric_name", "value", "unit"]
+        },
+        {
+          "name": "entity-and-category",
+          "match_by": ["entity_code", "category_code"],
+          "extract": ["entity_name", "parent_entity_name", "category_path"]
+        },
+        {
+          "name": "name-fallback",
+          "match_by": ["metric_name", "entity_name"],
+          "extract": ["metric_group", "entity_level"]
+        }
+      ]
+    }
+  ]
+}

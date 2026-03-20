@@ -1,0 +1,20 @@
+[
+  {
+    "left_table": "energy_daily",
+    "right_table": "dim_station_area",
+    "on": "energy_daily.station_area_id = dim_station_area.station_area_id",
+    "editable": true
+  },
+  {
+    "left_table": "load_daily",
+    "right_table": "dim_station_area",
+    "on": "load_daily.station_area_id = dim_station_area.station_area_id",
+    "editable": true
+  },
+  {
+    "left_table": "line_loss_daily",
+    "right_table": "dim_station_area",
+    "on": "line_loss_daily.station_area_id = dim_station_area.station_area_id",
+    "editable": true
+  }
+]

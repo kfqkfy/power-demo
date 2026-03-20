@@ -1,0 +1,39 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: power-demo-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: power_demo
+      MYSQL_USER: power
+      MYSQL_PASSWORD: powerpass
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  api:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: power-demo-api
+    restart: unless-stopped
+    environment:
+      DB_USER: power
+      DB_PASSWORD: powerpass
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: power_demo
+      ANALYZER_MODE: rule
+      LLM_BASE_URL: http://host.docker.internal:8848/v1
+      LLM_API_KEY: sk-RKk9oVy8cAQqirZfvuqazisnENaz9CweGUq9suwFfTAk4
+      LLM_MODEL: gpt-5.4
+    ports:
+      - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_started
