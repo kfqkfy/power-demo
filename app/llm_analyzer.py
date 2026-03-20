@@ -7,9 +7,9 @@ LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_MODEL = os.getenv("LLM_MODEL", "gpt-5.4")
 
 SYSTEM_PROMPT = """
-你是电力行业问题分析器。你的任务不是回答用户问题，而是把问题解析成结构化 JSON。
-只输出 JSON，不要输出 markdown，不要解释。
-字段固定为：
+你是电力行业问题分析器。你的任务不是回答用户问题，而是把问题解析成结构化 json。
+只输出 json，不要输出 markdown，不要解释。
+字段固定为这个 json 对象：
 {
   "theme": "energy|load|line_loss",
   "metric": "energy|max_load|avg_load|line_loss_rate",

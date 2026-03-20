@@ -90,7 +90,20 @@ sudo apt-get install -y docker.io docker-compose-v2
 sudo systemctl enable --now docker
 ```
 
-### 2. 启动服务
+### 2. 准备环境变量
+先复制一份环境变量模板：
+
+```bash
+cd power-demo
+cp .env.example .env
+```
+
+然后按需修改 `.env`，至少建议改掉：
+- `MYSQL_ROOT_PASSWORD`
+- `MYSQL_PASSWORD`
+- `LLM_API_KEY`
+
+### 3. 启动服务
 在项目目录执行：
 
 ```bash
