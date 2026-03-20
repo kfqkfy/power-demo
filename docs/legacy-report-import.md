@@ -104,6 +104,17 @@ python3 power-demo/scripts/preview_legacy_semantic.py \
 3. `energy_type_lv1` / `energy_type_lv2` / `category_path` 还没完全推断出来
 4. 还没直接落 MySQL，只先落成 raw JSON 做本地验证
 
+## 当前 semantic 展开规则
+
+当前如果 raw 行中带有 `raw_values`，会优先展开成多条 semantic fact：
+
+- `generation_total` → 发电量(合计)
+- `generation_trial` → 发电量(试运行)
+- `grid_total` → 上网电量(合计)
+- `grid_trial` → 上网电量(试运行)
+
+也就是说，一条 raw 行现在不再只对应一条 semantic 行，而是可能对应多条分指标事实行。
+
 ## 下一步
 
 下一步会继续补：
@@ -111,4 +122,4 @@ python3 power-demo/scripts/preview_legacy_semantic.py \
 1. raw MySQL 表结构
 2. 从 raw JSON / raw 表 转成 semantic fact 的更完整规则
 3. 指标代码优先匹配的 mapping 机制
-4. 更完整的多指标展开（发电量 / 上网电量 / 装机 / 利用小时等）
+4. 更完整的多指标展开（装机 / 利用小时 / 累计口径等）

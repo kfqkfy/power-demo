@@ -26,20 +26,81 @@ SEMANTIC_TARGET_FIELDS = [
     "source_row_key",
 ]
 
+RAW_VALUE_SPECS = [
+    {
+        "raw_key": "generation_total",
+        "metric_suffix": "generation_total",
+        "metric_name_suffix": "发电量(合计)",
+        "metric_group": "generation",
+        "time_scope": "current_month",
+        "unit_default": "万千瓦时",
+    },
+    {
+        "raw_key": "generation_trial",
+        "metric_suffix": "generation_trial",
+        "metric_name_suffix": "发电量(试运行)",
+        "metric_group": "generation",
+        "time_scope": "current_month",
+        "unit_default": "万千瓦时",
+    },
+    {
+        "raw_key": "grid_total",
+        "metric_suffix": "grid_total",
+        "metric_name_suffix": "上网电量(合计)",
+        "metric_group": "grid",
+        "time_scope": "current_month",
+        "unit_default": "万千瓦时",
+    },
+    {
+        "raw_key": "grid_trial",
+        "metric_suffix": "grid_trial",
+        "metric_name_suffix": "上网电量(试运行)",
+        "metric_group": "grid",
+        "time_scope": "current_month",
+        "unit_default": "万千瓦时",
+    },
+]
+
 
 def load_mapping_config() -> Dict[str, Any]:
     meta = load_metadata()
     return meta.get("mappings", {})
 
 
-def normalize_raw_row(raw_row: Dict[str, Any], source_table: str = "raw_unknown") -> Dict[str, Any]:
-    """
-    将 raw 层记录转换为统一 semantic 事实行。
-    这里先做最小骨架：
-    - 优先保留 raw 中已有 code/name 字段
-    - 不强依赖行号
-    - 为后续按 mapping 细化预留字段
-    """
+def clean_text(value: Any) -> Any:
+    if isinstance(value, str):
+        stripped = value.strip()
+        return stripped or None
+    return value
+
+
+def build_metric_code(base_code: Any, metric_suffix: str) -> str:
+    base = clean_text(base_code)
+    if base:
+        return f"{base}.{metric_suffix}"
+    return metric_suffix
+
+
+def build_metric_name(base_name: Any, suffix: str) -> str:
+    base = clean_text(base_name)
+    if base:
+        return f"{base}-{suffix}"
+    return suffix
+
+
+def build_category_code(base_code: Any, metric_suffix: str) -> str:
+    base = clean_text(base_code)
+    if base:
+        return f"{base}:{metric_suffix}"
+    return metric_suffix
+
+
+def build_category_path(entity_name: Any, metric_group: str, metric_name: str) -> str:
+    parts = [clean_text(entity_name), metric_group, metric_name]
+    return " / ".join([p for p in parts if p])
+
+
+def base_semantic_row(raw_row: Dict[str, Any], source_table: str = "raw_unknown") -> Dict[str, Any]:
     return {
         "stat_month": raw_row.get("stat_month") or raw_row.get("stat_date") or raw_row.get("period"),
         "report_code": raw_row.get("report_code"),
@@ -64,9 +125,46 @@ def normalize_raw_row(raw_row: Dict[str, Any], source_table: str = "raw_unknown"
     }
 
 
+def expand_raw_value_rows(raw_row: Dict[str, Any], source_table: str) -> List[Dict[str, Any]]:
+    raw_values = raw_row.get("raw_values") or {}
+    expanded: List[Dict[str, Any]] = []
+    base = base_semantic_row(raw_row, source_table=source_table)
+    base_metric_code = base.get("metric_code")
+    base_metric_name = base.get("metric_name")
+
+    for spec in RAW_VALUE_SPECS:
+        value = raw_values.get(spec["raw_key"])
+        if value in (None, ""):
+            continue
+
+        row = dict(base)
+        row["metric_code"] = build_metric_code(base_metric_code, spec["metric_suffix"])
+        row["metric_name"] = build_metric_name(base_metric_name, spec["metric_name_suffix"])
+        row["metric_group"] = spec["metric_group"]
+        row["time_scope"] = spec["time_scope"]
+        row["category_code"] = build_category_code(base_metric_code, spec["metric_suffix"])
+        row["category_path"] = build_category_path(
+            base.get("entity_name"), spec["metric_group"], row["metric_name"]
+        )
+        row["value"] = value
+        row["unit"] = raw_row.get("unit") or spec["unit_default"]
+        row["source_row_key"] = f"{base.get('source_row_key')}::{spec['metric_suffix']}"
+        expanded.append({k: row.get(k) for k in SEMANTIC_TARGET_FIELDS})
+
+    return expanded
+
+
+def normalize_raw_row(raw_row: Dict[str, Any], source_table: str = "raw_unknown") -> Dict[str, Any]:
+    return base_semantic_row(raw_row, source_table=source_table)
+
+
 def build_semantic_rows(raw_rows: List[Dict[str, Any]], source_table: str) -> List[Dict[str, Any]]:
     rows = []
     for row in raw_rows:
+        expanded = expand_raw_value_rows(row, source_table=source_table)
+        if expanded:
+            rows.extend(expanded)
+            continue
         normalized = normalize_raw_row(row, source_table=source_table)
         rows.append({k: normalized.get(k) for k in SEMANTIC_TARGET_FIELDS})
     return rows
